@@ -21,7 +21,7 @@ public class RequestFilter extends Filter {
         } else {
             LOGGER.warning("Request not supported " + exchange.getRequestURI().toString());
             exchange.sendResponseHeaders(HTTP_BAD_REQUEST, -1);
-            exchange.getResponseBody().close();
+            exchange.close();
         }
     }
 

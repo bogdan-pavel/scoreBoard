@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class UserScoreService {
@@ -24,6 +25,7 @@ public class UserScoreService {
 
 
     public void addScore(int level, UserScore userScore) {
+
         var userScores = this.userLevelScores.get(level);
         if (Objects.nonNull(userScores)) {
             if (userScores.stream().anyMatch(u -> u.getId() == userScore.getId())) {

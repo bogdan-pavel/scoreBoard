@@ -3,7 +3,6 @@ package com.score.session;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +18,7 @@ public class SessionManager {
     public static final int PERIOD = 1;
     public static final int SESSION_TIME_OUT = 10;
 
-    private final Map<Integer, UserSession> userSessions;
+    private final ConcurrentHashMap<Integer, UserSession> userSessions;
 
     private SessionManager() {
         userSessions = new ConcurrentHashMap<>();
@@ -29,9 +28,9 @@ public class SessionManager {
     public UserSession createUserSession(int userId, Date creationDate) {
         var userSession = userSessions.get(userId);
         if (userSession != null) {
-            replaceUserSession(userId, creationDate, userSession);
+            userSession = replaceUserSession(userId, creationDate, userSession);
         } else {
-            userSession = getNewUserSession(userId, creationDate);
+            userSession = createNewUserSession(userId, creationDate);
         }
         return userSession;
     }
@@ -57,16 +56,16 @@ public class SessionManager {
         return userSessions.entrySet().stream().anyMatch(entry -> entry.getValue().getSessionKey().equals(sessionKey));
     }
 
-    private UserSession getNewUserSession(int userId, Date creationDate) {
+    private UserSession createNewUserSession(int userId, Date creationDate) {
         UserSession userSession;
         userSession = new UserSession(userId, createSessionKey(), creationDate);
         userSessions.put(userId, userSession);
         return userSession;
     }
 
-    private void replaceUserSession(int userId, Date creationDate, UserSession userSession) {
+    private UserSession replaceUserSession(int userId, Date creationDate, UserSession userSession) {
         userSession.updateCreationDate(creationDate);
-        userSessions.replace(userId, userSession);
+        return userSessions.replace(userId, userSession);
     }
 
     private String createSessionKey() {

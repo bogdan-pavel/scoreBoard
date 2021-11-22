@@ -4,12 +4,15 @@ import com.score.model.UserScore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.llorllale.cactoos.matchers.Assertion;
+import org.llorllale.cactoos.matchers.RunsInThreads;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -107,6 +110,25 @@ public class UserScoreServiceTest {
         assertEquals(userScoreService.getHighScoreList(1), "2=20,3=15,1=10");
 
     }
+
+    @Test
+    public void whenAddScoreMultiThreading_thenExpectNoConcurrentModificationException() {
+        new Assertion<>(
+                "Must be able to add multiple scores",
+                t -> {
+                    boolean success = true;
+                    try {
+                        int getAndIncrement = t.getAndIncrement();
+                        userScoreService.addScore(getAndIncrement % 10, new UserScore(getAndIncrement, getAndIncrement + 10));
+                    } catch (ConcurrentModificationException ex) {
+                        success = false;
+                    }
+                    return success;
+                },
+                new RunsInThreads<>(new AtomicInteger(), 100)
+        ).affirm();
+    }
+
 
     private void reflectionSetUserLevelScores(ConcurrentHashMap<Integer, ConcurrentSkipListSet<UserScore>> givenScenario) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method method = UserScoreService.class.getDeclaredMethod("setUserLevelScores", ConcurrentHashMap.class);
