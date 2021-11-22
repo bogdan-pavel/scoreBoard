@@ -13,7 +13,7 @@ POST -> http://localhost:8081/2/score?sessionkey=UICSNDK
 GET -> http://localhost:8081/2/highscorelist - > 4711=1500,131=1220
 
 ###Build application
-mvn clean install
+ mvn clean install
 
 ### Start http Server
 java -jar scoreBoard-1.0.jar
