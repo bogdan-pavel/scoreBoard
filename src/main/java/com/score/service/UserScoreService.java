@@ -23,20 +23,23 @@ public class UserScoreService {
     }
 
 
-    public synchronized void addScore(int level, UserScore userScore) {
+    public void addScore(int level, UserScore userScore) {
         var userScores = this.userLevelScores.get(level);
         if (Objects.nonNull(userScores)) {
             if (userScores.stream().anyMatch(u -> u.getId() == userScore.getId())) {
-                updateUserScoreIfNeeded(userScore, level);
+                updateIfBiggerUserScore(userScore, level);
             } else if (userScores.size() >= HIGH_SCORE_LEVEL_NO && userScores.last().getScore() < userScore.getScore()) {
-                //TODO this should be atomic
-                userScores.remove(userScores.last());
-                userScores.add(userScore);
+                addBiggerScoreRemoveSmallestScore(userScore, userScores);
             } else {
                 userScores.add(userScore);
             }
         }
         addNewUserScore(level, userScore);
+    }
+
+    private synchronized void addBiggerScoreRemoveSmallestScore(UserScore userScore, ConcurrentSkipListSet<UserScore> userScores) {
+        userScores.remove(userScores.last());
+        userScores.add(userScore);
     }
 
     public String getHighScoreList(int level) {
@@ -48,10 +51,12 @@ public class UserScoreService {
         return highScoreResponse;
     }
 
+    //used in testing reflection
     private ConcurrentHashMap<Integer, ConcurrentSkipListSet<UserScore>> getUserLevelScores() {
         return userLevelScores;
     }
 
+    //used for testing reflection
     private void setUserLevelScores(ConcurrentHashMap<Integer, ConcurrentSkipListSet<UserScore>> userLevelScores) {
         this.userLevelScores = userLevelScores;
     }
@@ -63,9 +68,12 @@ public class UserScoreService {
         userLevelScores.putIfAbsent(level, userScores);
     }
 
-    private void updateUserScoreIfNeeded(UserScore userScore, Integer level) {
+    private void updateIfBiggerUserScore(UserScore userScore, Integer level) {
         ConcurrentSkipListSet<UserScore> userScores = this.userLevelScores.get(level);
-        //TODO this should be atomic
+        removeSmallestUserScoreAndAddBiggerOne(userScore, userScores);
+    }
+
+    private synchronized void removeSmallestUserScoreAndAddBiggerOne(UserScore userScore, ConcurrentSkipListSet<UserScore> userScores) {
         if (userScores.removeIf(u -> u.getId() == userScore.getId() && u.getScore() < userScore.getScore())) {
             userScores.add(userScore);
         }

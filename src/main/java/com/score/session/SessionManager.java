@@ -29,21 +29,15 @@ public class SessionManager {
     public UserSession createUserSession(int userId, Date creationDate) {
         var userSession = userSessions.get(userId);
         if (userSession != null) {
-            userSession.updateCreationDate(creationDate);
-            userSessions.replace(userId, userSession);
+            replaceUserSession(userId, creationDate, userSession);
         } else {
-            userSession = new UserSession(userId, createSessionKey(),creationDate);
-            userSessions.put(userId, userSession);
+            userSession = getNewUserSession(userId, creationDate);
         }
         return userSession;
     }
 
     public static SessionManager getInstance() {
         return instance;
-    }
-
-    private String createSessionKey() {
-        return UUID.randomUUID().toString().split("-")[0];
     }
 
     public void removeUserSession() {
@@ -55,15 +49,31 @@ public class SessionManager {
         });
     }
 
-    private Date getSessionExpireTime() {
-        return Date.from(Instant.now().minus(SESSION_TIME_OUT, ChronoUnit.MINUTES));
-    }
-
     public Optional<UserSession> getUserSessionByKey(String sessionKey) {
         return userSessions.values().stream().filter(userSession -> userSession.getSessionKey().equals(sessionKey)).findFirst();
     }
 
     public boolean validSessionKey(String sessionKey) {
         return userSessions.entrySet().stream().anyMatch(entry -> entry.getValue().getSessionKey().equals(sessionKey));
+    }
+
+    private UserSession getNewUserSession(int userId, Date creationDate) {
+        UserSession userSession;
+        userSession = new UserSession(userId, createSessionKey(), creationDate);
+        userSessions.put(userId, userSession);
+        return userSession;
+    }
+
+    private void replaceUserSession(int userId, Date creationDate, UserSession userSession) {
+        userSession.updateCreationDate(creationDate);
+        userSessions.replace(userId, userSession);
+    }
+
+    private String createSessionKey() {
+        return UUID.randomUUID().toString().split("-")[0];
+    }
+
+    private Date getSessionExpireTime() {
+        return Date.from(Instant.now().minus(SESSION_TIME_OUT, ChronoUnit.MINUTES));
     }
 }

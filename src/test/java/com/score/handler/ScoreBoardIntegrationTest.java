@@ -35,13 +35,13 @@ public class ScoreBoardIntegrationTest {
     private ScoreBoardServer scoreBoardServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void createAndStartServer() throws Exception {
         scoreBoardServer = new ScoreBoardServer();
         scoreBoardServer.start();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void stopServer() {
         scoreBoardServer.stop();
     }
 
