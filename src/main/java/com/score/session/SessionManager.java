@@ -8,10 +8,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 public class SessionManager {
-    private static final Logger LOGGER = Logger.getLogger(SessionManager.class.getName());
 
     private static final SessionManager instance = new SessionManager();
 
@@ -42,8 +40,7 @@ public class SessionManager {
     public void removeUserSession() {
         userSessions.forEach((key, userSession) -> {
             if (userSession.getCreationDate().before(getSessionExpireTime())) {
-                userSession = userSessions.remove(userSession.getId());
-                LOGGER.info("User sessionKey expired.Remove userSession" + userSession);
+                userSessions.remove(userSession.getId());
             }
         });
     }

@@ -68,7 +68,7 @@ public class SessionManagerTest {
     @Test
     public void whenCreateUserSessionMultiThreading_thenExpectNoConcurrentModificationException() {
         new Assertion<>(
-                "Must be able to add multiple scores",
+                "Must be able to log in multiple users simultaneous",
                 t -> {
                     boolean success = true;
                     try {

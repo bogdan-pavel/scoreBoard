@@ -16,7 +16,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -32,11 +31,14 @@ public class ScoreBoardIntegrationTest {
     public static final String LOCALHOST = "localhost";
     public static final int PORT = 8081;
 
-    private ScoreBoardServer scoreBoardServer;
+    private final ScoreBoardServer scoreBoardServer;
+
+    public ScoreBoardIntegrationTest() throws IOException {
+        scoreBoardServer = new ScoreBoardServer();
+    }
 
     @Before
     public void createAndStartServer() throws Exception {
-        scoreBoardServer = new ScoreBoardServer();
         scoreBoardServer.start();
     }
 
@@ -70,7 +72,7 @@ public class ScoreBoardIntegrationTest {
     public void givenNoUserScoreForLevel_whenAddUserScoreForLevel_thenOk() throws IOException, URISyntaxException {
         //given
         HttpResponse responseLogin = loginGet();
-        HttpPost httpPost = getUserScorePost(EntityUtils.toString(responseLogin.getEntity()));
+        HttpPost httpPost = getUserScorePost(EntityUtils.toString(responseLogin.getEntity()),"1200");
         CloseableHttpClient client = HttpClients.createDefault();
 
         //when
@@ -85,10 +87,9 @@ public class ScoreBoardIntegrationTest {
     }
 
     @Test
-    @Ignore
-    public void givenEmptyScoreBoard_whenAddUserScoreWithoutLoginAndGetHighScoreForLevel_thenEmptyBoard() throws IOException, URISyntaxException {
+    public void givenScoreBoard_whenAddUserScoreWithoutLoginAndGetHighScoreForLevel_thenUserScoreNotPresent() throws Exception {
         //given
-        HttpPost httpPost = getUserScorePost("invalidSessionKey");
+        HttpPost httpPost = getUserScorePost("invalidSessionKey","1300");
         CloseableHttpResponse clientScorePost = HttpClients.createDefault().execute(httpPost);
         clientScorePost.close();
 
@@ -102,30 +103,12 @@ public class ScoreBoardIntegrationTest {
         assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
         assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
         String responseBody = EntityUtils.toString(response.getEntity());
-        assertTrue(responseBody.isEmpty());
+        assertFalse(responseBody.contains("1=1500"));
 
         client.close();
     }
 
-    @Test
-    public void givenUserScoreForLevel_whenGetHighScoreForLevel_thenReturnUserScoreCsv() throws IOException, URISyntaxException {
-        //given
-        HttpResponse responseLogin = loginGet();
-        executeUserScorePost(responseLogin);
 
-        HttpUriRequest httpGetHighScore = new HttpGet("http://" + LOCALHOST + ":" + PORT + "/1/highscorelist");
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        CloseableHttpResponse response = client.execute(httpGetHighScore);
-
-        //then
-        assertEquals("text/plain", ContentType.getOrDefault(response.getEntity()).getMimeType());
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
-        String responseBody = EntityUtils.toString(response.getEntity());
-        assertFalse(responseBody.isEmpty());
-        assertEquals("1=15", responseBody);
-
-        client.close();
-    }
 
     @Test
     public void givenWrongUriRequest_whenExecuteRequest_thenBadRequest() throws IOException {
@@ -141,16 +124,16 @@ public class ScoreBoardIntegrationTest {
     }
 
     private void executeUserScorePost(HttpResponse responseLogin) throws URISyntaxException, IOException {
-        HttpPost httpPost = getUserScorePost(EntityUtils.toString(responseLogin.getEntity()));
+        HttpPost httpPost = getUserScorePost(EntityUtils.toString(responseLogin.getEntity()),"1500");
         CloseableHttpResponse client = HttpClients.createDefault().execute(httpPost);
         client.close();
     }
 
-    private HttpPost getUserScorePost(String sessionKey) throws URISyntaxException, IOException {
+    private HttpPost getUserScorePost(String sessionKey,String body) throws URISyntaxException, IOException {
         HttpPost httpPost = new HttpPost("http://" + LOCALHOST + ":" + PORT + "/1/score");
         URI uri = new URIBuilder(httpPost.getURI()).addParameter("sessionkey", sessionKey).build();
         httpPost.setURI(uri);
-        httpPost.setEntity(new StringEntity("15"));
+        httpPost.setEntity(new StringEntity(body));
         return httpPost;
     }
 

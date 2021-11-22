@@ -34,15 +34,15 @@ public class ScoreBoardServer {
 
     public void stop() {
         if (this.httpServer != null) {
-            this.httpServer.stop(0);
+            stopServer();
         }
     }
 
     private void addShutDownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LOGGER.info("Server is shutting down...");
-            httpServer.stop(0);
-            LOGGER.info("Server stopped!");
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
+    }
+
+    private void stopServer() {
+        this.httpServer.stop(0);
     }
 }

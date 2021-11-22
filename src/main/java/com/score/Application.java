@@ -19,11 +19,9 @@ public class Application {
             System.in.read();
 
             server.stop();
-
             LOGGER.warning("\nScoreboard server stopped!");
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Scoreboard server terminated unexpectedly!", e);
         }
-
     }
 }

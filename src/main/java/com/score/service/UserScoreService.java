@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class UserScoreService {

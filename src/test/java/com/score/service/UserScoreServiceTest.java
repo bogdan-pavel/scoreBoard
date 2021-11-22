@@ -114,7 +114,7 @@ public class UserScoreServiceTest {
     @Test
     public void whenAddScoreMultiThreading_thenExpectNoConcurrentModificationException() {
         new Assertion<>(
-                "Must be able to add multiple scores",
+                "Must be able to add multiple scores simultaneous",
                 t -> {
                     boolean success = true;
                     try {
