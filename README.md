@@ -2,6 +2,8 @@
 
 The REST server app is running on port 8081
 
+The app was developed using java version 11
+
 #### Login REST call
 GET -> http://localhost:8081/4711/login --> UICSNDK
 
