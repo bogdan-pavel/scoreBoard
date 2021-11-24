@@ -47,7 +47,7 @@ public class UserScoreService {
         String highScoreResponse = "";
         ConcurrentSkipListSet<UserScore> userScores = this.userLevelScores.get(level);
         if (Objects.nonNull(userScores)) {
-            highScoreResponse = userScores.stream().map(userScore -> userScore.getId() + "=" + userScore.getScore()).collect(Collectors.joining(","));
+            highScoreResponse = userScores.stream().limit(HIGH_SCORE_LEVEL_NO).map(userScore -> userScore.getId() + "=" + userScore.getScore()).collect(Collectors.joining(","));
         }
         return highScoreResponse;
     }
